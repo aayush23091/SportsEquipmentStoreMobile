@@ -1,8 +1,10 @@
 package com.example.sportsequipmentstore.view
 
+import android.R.attr.onClick
 import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -21,6 +23,7 @@ import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
+import androidx.compose.material3.ListItemDefaults.contentColor
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -88,7 +91,19 @@ fun DashboardBody() {
                                 Icon(Icons.Default.Edit,contentDescription = null)
                             }
 
-                            IconButton(onClick = {},colors = IconButtonDefaults.iconButtonColors(
+                            IconButton(onClick = {
+                                viewModel.deleteProduct(eachProduct?.productId.toString()){
+                                        success, message ->
+                                    if (success){
+                                        Toast.makeText(context,message,Toast.LENGTH_LONG)
+                                            .show()
+                                    }else{
+                                        Toast.makeText(context,message,Toast.LENGTH_LONG)
+                                            .show()
+                                    }
+                                }
+
+                            },colors = IconButtonDefaults.iconButtonColors(
                                 contentColor = Color.Red
                             )) {
                                 Icon(Icons.Default.Delete,contentDescription = null)
