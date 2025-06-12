@@ -2,6 +2,7 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
+    alias(libs.plugins.google.gms.google.services)
 }
 
 android {
@@ -10,8 +11,8 @@ android {
 
     defaultConfig {
         applicationId = "com.example.sportsequipmentstore"
-        minSdk = 22
-        targetSdk = 35
+        minSdk = 23
+        targetSdk = 34
         versionCode = 1
         versionName = "1.0"
 
@@ -40,7 +41,7 @@ android {
 }
 
 dependencies {
-
+    implementation("androidx.compose.runtime:runtime-livedata:1.6.0")
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)
@@ -49,6 +50,8 @@ dependencies {
     implementation(libs.androidx.ui.graphics)
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
+    implementation(libs.firebase.auth)
+    implementation(libs.firebase.database)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
