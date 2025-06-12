@@ -19,6 +19,7 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.Card
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -58,6 +59,8 @@ fun DashboardBody() {
 
     val products = viewModel.allProducts.observeAsState(initial = emptyList())
 
+    val loading = viewModel.loading.observeAsState(initial = true)
+
 
     LaunchedEffect(Unit) {
         viewModel.getAllProducts()
@@ -72,7 +75,15 @@ fun DashboardBody() {
             }
         }
     ) { innerPadding ->
-        LazyColumn (modifier = Modifier.padding(innerPadding)) {
+        LazyColumn(modifier = Modifier.padding(innerPadding)) {
+            if (loading.value) {
+                item {
+                    CircularProgressIndicator()
+                }
+            } else {
+                items(products.value.size) {}
+            }
+
             items(products.value.size) {index ->
                 val eachProduct = products.value[index]
                 Card(modifier = Modifier.fillMaxWidth().padding(15.dp)){
