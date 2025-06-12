@@ -96,7 +96,13 @@ fun DashboardBody() {
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.End
                         ) {
-                            IconButton(onClick = {}, colors = IconButtonDefaults.iconButtonColors(
+                            IconButton(onClick = {
+
+                                val intent = Intent(context, UpdateProductActivity ::class.java)
+                                intent.putExtra("productId","${eachProduct?.productId}")
+                                context.startActivity(intent)
+
+                            }, colors = IconButtonDefaults.iconButtonColors(
                                 contentColor = Color.Gray
                             )) {
                                 Icon(Icons.Default.Edit,contentDescription = null)

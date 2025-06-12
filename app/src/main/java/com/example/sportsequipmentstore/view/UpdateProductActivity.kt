@@ -17,7 +17,9 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -52,6 +54,18 @@ fun UpdateProductBody() {
 
     val context = LocalContext.current
     val activity = context as? Activity
+
+
+    val productId : String? = activity?.intent?.getStringExtra("productId")
+    val products = viewModel.products.observeAsState(initial = null)
+
+    LaunchedEffect(Unit) {
+        viewModel.getProductById(productId.toString())
+    }
+
+    pName = products.value?.productName ?: ""
+    pDesc = products.value?.productDescription?: ""
+    pPrice = products.value?.productPrice.toString()
 
 
     Scaffold { innerPadding ->
@@ -116,7 +130,7 @@ fun UpdateProductBody() {
                     },
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    Text("Add Product")
+                    Text("Update Product")
                 }
             }
         }
