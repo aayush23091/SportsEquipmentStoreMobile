@@ -64,12 +64,12 @@ fun NavigationBody() {
         topBar = {
             TopAppBar(
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = Color.Red,
-                    titleContentColor = Color.Yellow,
+                    containerColor = Color.Green,
+                    titleContentColor = Color.Black,
                     navigationIconContentColor = Color.White
                 ),
                 title = {
-                    Text("Dashboard")
+                    Text("RetroCrugSports")
                 },
                 navigationIcon = {
                     IconButton(onClick = {
@@ -133,7 +133,7 @@ fun Home1() {
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(color = Color.Gray)
+            .background(color = Color.White)
     ) {
 
     }
@@ -145,7 +145,7 @@ fun Home2() {
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(color = Color.Yellow)
+            .background(color = Color.White)
     ) {
 
     }
@@ -157,7 +157,7 @@ fun Home3() {
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(color = Color.Green)
+            .background(color = Color.White)
     ) {
     }
 }
