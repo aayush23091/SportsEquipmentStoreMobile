@@ -103,7 +103,7 @@ fun DashboardBody() {
                                 context.startActivity(intent)
 
                             }, colors = IconButtonDefaults.iconButtonColors(
-                                contentColor = Color.Gray
+                                contentColor = Color.Black
                             )) {
                                 Icon(Icons.Default.Edit,contentDescription = null)
                             }
