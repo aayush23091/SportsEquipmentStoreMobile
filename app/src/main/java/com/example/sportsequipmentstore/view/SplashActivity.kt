@@ -7,17 +7,18 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Scaffold
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.layout.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 import com.example.sportsequipmentstore.LoginActivity
-
+import com.example.sportsequipmentstore.R
 import kotlinx.coroutines.delay
 
 class SplashActivity : ComponentActivity() {
@@ -25,51 +26,45 @@ class SplashActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
-            SplashBody();
-
+            SplashBody()
         }
     }
 }
 
 @Composable
-fun SplashBody (){
+fun SplashBody() {
     val context = LocalContext.current
     val activity = context as Activity
 
     val sharedPreferences = context.getSharedPreferences("User", Context.MODE_PRIVATE)
-
-    val localEmail = sharedPreferences.getString("email","").toString()
-
+    val localEmail = sharedPreferences.getString("email", "").toString()
 
     LaunchedEffect(Unit) {
-        delay(3000)
-        if (localEmail.isEmpty()) {
-
-
-            val intent = Intent(context, LoginActivity::class.java)
-            context.startActivity(intent)
-            activity.finish()
-        }
-    }
-    Scaffold {
-            innerPadding->
-
-        Column (
-            modifier = Modifier.fillMaxWidth().padding(innerPadding)
-        ){
-
-        }
-
+        delay(3000) // Wait for 3 seconds
+        val intent = Intent(context, LoginActivity::class.java)
+        context.startActivity(intent)
+        activity.finish()
     }
 
-
+    Box(
+        modifier = Modifier
+            .fillMaxSize(),
+        contentAlignment = Alignment.Center
+    ) {
+        Image(
+            painter = painterResource(id = R.drawable.retrocruglogo),
+            contentDescription = "RetroCrug Logo",
+            modifier = Modifier
+                .width(300.dp)
+                .height(300.dp)
+        )
+    }
 }
-
-
 
 @Preview
 @Composable
-fun PreviewSplash(){
+fun PreviewSplash() {
     SplashBody()
-
 }
+
+
