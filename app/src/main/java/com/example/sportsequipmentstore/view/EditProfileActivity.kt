@@ -108,7 +108,7 @@ fun EditProfileScreen(
                     )
                 } else {
                     Image(
-                        painter = painterResource(R.drawable.placeholder),
+                        painter = painterResource(R.drawable.profilepicplaceholder),
                         contentDescription = "Default Profile",
                         modifier = Modifier.fillMaxSize(),
                         contentScale = ContentScale.Crop
