@@ -75,7 +75,6 @@ fun forgetBody() {
                     }
                 },
                 modifier = Modifier
-                    .fillMaxWidth()
                     .padding(top = 15.dp)
             ) {
                 Text("Submit")

@@ -34,6 +34,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.sportsequipmentstore.repository.UserRepositoryImplementation
 import com.example.sportsequipmentstore.view.DashboardActivity
+import com.example.sportsequipmentstore.view.ForgetPasswordActivity
 import com.example.sportsequipmentstore.view.RegistrationActivity
 import com.example.sportsequipmentstore.viewmodel.UserViewModel
 import kotlinx.coroutines.launch
@@ -174,7 +175,15 @@ fun LoginBody() {
                     Text("Remember me")
                 }
 
-                Text("Forget Password?")
+                Text(
+                    text = "Forget Password?",
+                    color = Color.Blue,
+                    modifier = Modifier.clickable {
+                        val intent = Intent(context, ForgetPasswordActivity::class.java)
+                        context.startActivity(intent)
+                        activity.finish()
+                    }
+                )
             }
 
             Spacer(modifier = Modifier.height(10.dp))
