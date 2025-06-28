@@ -66,4 +66,4 @@ fun SplashBody() {
 fun PreviewSplash() {
     SplashBody()
 }
-
+//nice
