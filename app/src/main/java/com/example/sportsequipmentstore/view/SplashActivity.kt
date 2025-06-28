@@ -67,4 +67,3 @@ fun PreviewSplash() {
     SplashBody()
 }
 
-
