@@ -1,19 +1,25 @@
 package com.example.sportsequipmentstore.repository
 
-import com.example.sportsequipmentstore.model.WishlistItem
+import com.example.sportsequipmentstore.model.WishlistItemModel
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
 
-class WishlistRepositoryImplementation {
+object WishlistRepositoryImpl : WishlistRepository {
 
-    private val _wishlistItems = MutableStateFlow<List<WishlistItem>>(emptyList())
-    val wishlistItems: StateFlow<List<WishlistItem>> = _wishlistItems
+    private val wishlist = mutableListOf<WishlistItemModel>()
+    private val wishlistFlow = MutableStateFlow<List<WishlistItemModel>>(emptyList())
 
-    fun addToWishlist(item: WishlistItem) {
-        _wishlistItems.value = _wishlistItems.value + item
+    override suspend fun addToWishlist(item: WishlistItemModel) {
+        if (wishlist.none { it.productName == item.productName }) {
+            wishlist.add(item)
+            wishlistFlow.value = wishlist.toList()
+        }
     }
 
-    fun removeFromWishlist(item: WishlistItem) {
-        _wishlistItems.value = _wishlistItems.value.filter { it.id != item.id }
+    override fun getWishlistItems(): Flow<List<WishlistItemModel>> = wishlistFlow
+
+    override suspend fun removeFromWishlist(item: WishlistItemModel) {
+        wishlist.removeAll { it.productName == item.productName }
+        wishlistFlow.value = wishlist.toList()
     }
 }

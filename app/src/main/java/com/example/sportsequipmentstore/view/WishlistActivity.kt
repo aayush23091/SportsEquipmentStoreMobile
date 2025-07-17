@@ -1,3 +1,4 @@
+
 package com.example.sportsequipmentstore.view
 
 import android.os.Bundle
@@ -5,7 +6,6 @@ import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -17,25 +17,32 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.sportsequipmentstore.model.WishlistItem
-import com.example.sportsequipmentstore.repository.WishlistRepositoryImplementation
+import com.example.sportsequipmentstore.model.WishlistItemModel
+import com.example.sportsequipmentstore.repository.WishlistRepositoryImpl
 import com.example.sportsequipmentstore.viewmodel.WishlistViewModel
+import com.example.sportsequipmentstore.viewmodel.WishlistViewModelFactory
 
 class WishlistActivity : ComponentActivity() {
+    private lateinit var wishlistViewModel: WishlistViewModel
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        wishlistViewModel = androidx.lifecycle.ViewModelProvider(
+            this,
+            WishlistViewModelFactory(WishlistRepositoryImpl)
+        )[WishlistViewModel::class.java]
+
         setContent {
-            WishlistScreen()
+            WishlistScreen(wishlistViewModel)
         }
     }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun WishlistScreen() {
+fun WishlistScreen(viewModel: WishlistViewModel) {
     val context = LocalContext.current
-    val repo = remember { WishlistRepositoryImplementation() }
-    val viewModel = remember { WishlistViewModel(repo) }
 
     val wishlistItems by viewModel.wishlistItems.collectAsState()
 
@@ -76,7 +83,7 @@ fun WishlistScreen() {
 }
 
 @Composable
-fun WishlistItemCard(item: WishlistItem, onRemove: () -> Unit) {
+fun WishlistItemCard(item: WishlistItemModel, onRemove: () -> Unit) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -94,3 +101,4 @@ fun WishlistItemCard(item: WishlistItem, onRemove: () -> Unit) {
         }
     }
 }
+

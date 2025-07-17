@@ -1,21 +1,36 @@
 package com.example.sportsequipmentstore.viewmodel
 
 import androidx.lifecycle.ViewModel
-import com.example.sportsequipmentstore.model.WishlistItem
-import com.example.sportsequipmentstore.repository.WishlistRepositoryImplementation
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.viewModelScope
+import com.example.sportsequipmentstore.model.WishlistItemModel
+import com.example.sportsequipmentstore.repository.WishlistRepository
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.launch
 
-class WishlistViewModel(
-    private val repo: WishlistRepositoryImplementation
-) : ViewModel() {
+class WishlistViewModel(private val repository: WishlistRepository) : ViewModel() {
 
-    val wishlistItems: StateFlow<List<WishlistItem>> = repo.wishlistItems
+    private val _wishlistItems = MutableStateFlow<List<WishlistItemModel>>(emptyList())
+    val wishlistItems: StateFlow<List<WishlistItemModel>> = _wishlistItems
 
-    fun addToWishlist(item: WishlistItem) {
-        repo.addToWishlist(item)
+    init {
+        viewModelScope.launch {
+            repository.getWishlistItems().collect {
+                _wishlistItems.value = it
+            }
+        }
     }
 
-    fun removeFromWishlist(item: WishlistItem) {
-        repo.removeFromWishlist(item)
+    fun addToWishlist(item: WishlistItemModel) {
+        viewModelScope.launch {
+            repository.addToWishlist(item)
+        }
+    }
+
+    fun removeFromWishlist(item: WishlistItemModel) {
+        viewModelScope.launch {
+            repository.removeFromWishlist(item)
+        }
     }
 }

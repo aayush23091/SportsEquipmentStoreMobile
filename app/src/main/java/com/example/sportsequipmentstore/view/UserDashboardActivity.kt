@@ -10,9 +10,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.MoreVert
-import androidx.compose.material.icons.filled.Person
-import androidx.compose.material.icons.filled.ShoppingCart
+import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.livedata.observeAsState
@@ -23,32 +21,45 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.example.sportsequipmentstore.LoginActivity
 import com.example.sportsequipmentstore.model.CartItemModel
+import com.example.sportsequipmentstore.model.WishlistItemModel
 import com.example.sportsequipmentstore.repository.CartRepositoryImpl
 import com.example.sportsequipmentstore.repository.ProductRepositoryImpl
-import com.example.sportsequipmentstore.viewmodel.CartViewModel
-import com.example.sportsequipmentstore.viewmodel.CartViewModelFactory
-import com.example.sportsequipmentstore.viewmodel.ProductViewModel
+import com.example.sportsequipmentstore.repository.WishlistRepositoryImpl
+import com.example.sportsequipmentstore.viewmodel.*
 
 class UserDashboardActivity : ComponentActivity() {
 
     private lateinit var cartViewModel: CartViewModel
+    private lateinit var wishlistViewModel: WishlistViewModel
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         val cartRepo = CartRepositoryImpl()
-        val cartFactory = CartViewModelFactory(cartRepo)
-        cartViewModel = androidx.lifecycle.ViewModelProvider(this, cartFactory)[CartViewModel::class.java]
+        val wishlistRepo = WishlistRepositoryImpl // singleton instance
+
+        cartViewModel = androidx.lifecycle.ViewModelProvider(
+            this,
+            CartViewModelFactory(cartRepo)
+        )[CartViewModel::class.java]
+
+        wishlistViewModel = androidx.lifecycle.ViewModelProvider(
+            this,
+            WishlistViewModelFactory(wishlistRepo)
+        )[WishlistViewModel::class.java]
 
         setContent {
-            UserDashboardBody(cartViewModel)
+            UserDashboardBody(cartViewModel, wishlistViewModel)
         }
     }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun UserDashboardBody(cartViewModel: CartViewModel) {
+fun UserDashboardBody(
+    cartViewModel: CartViewModel,
+    wishlistViewModel: WishlistViewModel
+) {
     val context = LocalContext.current
     val repo = remember { ProductRepositoryImpl() }
     val productViewModel = remember { ProductViewModel(repo) }
@@ -70,15 +81,12 @@ fun UserDashboardBody(cartViewModel: CartViewModel) {
                     titleContentColor = Color.White
                 ),
                 actions = {
-                    // Edit Profile Icon
                     IconButton(onClick = {
                         val intent = Intent(context, EditProfileActivity::class.java)
                         context.startActivity(intent)
                     }) {
                         Icon(Icons.Default.Person, contentDescription = "Edit Profile", tint = Color.White)
                     }
-
-                    // Dropdown menu for logout
                     Box {
                         IconButton(onClick = { menuExpanded = true }) {
                             Icon(Icons.Default.MoreVert, contentDescription = "Menu", tint = Color.White)
@@ -102,14 +110,30 @@ fun UserDashboardBody(cartViewModel: CartViewModel) {
                 }
             )
         },
-        floatingActionButton = {
-            FloatingActionButton(
-                onClick = {
-                    val intent = Intent(context, CartActivity::class.java)
-                    context.startActivity(intent)
-                }
-            ) {
-                Icon(Icons.Default.ShoppingCart, contentDescription = "View Cart")
+        bottomBar = {
+            NavigationBar {
+                NavigationBarItem(
+                    selected = true,
+                    onClick = {},
+                    icon = { Icon(Icons.Default.Home, contentDescription = "Home") },
+                    label = { Text("Home") }
+                )
+                NavigationBarItem(
+                    selected = false,
+                    onClick = {
+                        context.startActivity(Intent(context, CartActivity::class.java))
+                    },
+                    icon = { Icon(Icons.Default.ShoppingCart, contentDescription = "Cart") },
+                    label = { Text("Cart") }
+                )
+                NavigationBarItem(
+                    selected = false,
+                    onClick = {
+                        context.startActivity(Intent(context, WishlistActivity::class.java))
+                    },
+                    icon = { Icon(Icons.Default.FavoriteBorder, contentDescription = "Wishlist") },
+                    label = { Text("Wishlist") }
+                )
             }
         },
         modifier = Modifier.background(Color(0xFF4CAF50))
@@ -147,8 +171,11 @@ fun UserDashboardBody(cartViewModel: CartViewModel) {
                                 text = product?.productDescription ?: "",
                                 color = Color.White
                             )
-                            Button(
-                                onClick = {
+                            Row(
+                                Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween
+                            ) {
+                                Button(onClick = {
                                     val cartItem = CartItemModel(
                                         id = "",
                                         productName = product?.productName ?: "",
@@ -158,10 +185,21 @@ fun UserDashboardBody(cartViewModel: CartViewModel) {
                                     )
                                     cartViewModel.addToCart(cartItem)
                                     Toast.makeText(context, "Added to cart", Toast.LENGTH_SHORT).show()
-                                },
-                                modifier = Modifier.padding(top = 8.dp)
-                            ) {
-                                Text("Add to Cart")
+                                }) {
+                                    Text("Add to Cart")
+                                }
+
+                                OutlinedButton(onClick = {
+                                    val item = WishlistItemModel(
+                                        productName = product?.productName ?: "",
+                                        productPrice = product?.productPrice ?: 0.0,
+                                        image = product?.image ?: ""
+                                    )
+                                    wishlistViewModel.addToWishlist(item)
+                                    Toast.makeText(context, "Added to wishlist", Toast.LENGTH_SHORT).show()
+                                }) {
+                                    Text("❤️ Wishlist")
+                                }
                             }
                         }
                     }
