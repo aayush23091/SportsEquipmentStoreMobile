@@ -1,5 +1,4 @@
 
-
 package com.example.sportsequipmentstore.view
 
 import android.content.Intent
@@ -20,41 +19,34 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.ViewModelProvider
 import com.example.sportsequipmentstore.LoginActivity
 import com.example.sportsequipmentstore.model.CartItemModel
 import com.example.sportsequipmentstore.model.WishlistItemModel
-import com.example.sportsequipmentstore.repository.CartRepositoryImpl
-import com.example.sportsequipmentstore.repository.ProductRepositoryImpl
-import com.example.sportsequipmentstore.repository.WishlistRepositoryImpl
-import com.example.sportsequipmentstore.viewmodel.CartViewModel
-import com.example.sportsequipmentstore.viewmodel.CartViewModelFactory
-import com.example.sportsequipmentstore.viewmodel.ProductViewModel
-import com.example.sportsequipmentstore.viewmodel.WishlistViewModel
-import com.example.sportsequipmentstore.viewmodel.WishlistViewModelFactory
+import com.example.sportsequipmentstore.repository.*
+import com.example.sportsequipmentstore.viewmodel.*
 
 class UserDashboardActivity : ComponentActivity() {
 
     private lateinit var cartViewModel: CartViewModel
     private lateinit var wishlistViewModel: WishlistViewModel
+    private lateinit var userViewModel: UserViewModel
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        // Repositories
         val cartRepo = CartRepositoryImpl()
         val wishlistRepo = WishlistRepositoryImpl
+        val userRepo = UserRepositoryImplementation()
 
-        cartViewModel = androidx.lifecycle.ViewModelProvider(
-            this,
-            CartViewModelFactory(cartRepo)
-        )[CartViewModel::class.java]
-
-        wishlistViewModel = androidx.lifecycle.ViewModelProvider(
-            this,
-            WishlistViewModelFactory(wishlistRepo)
-        )[WishlistViewModel::class.java]
+        // ViewModels
+        cartViewModel = ViewModelProvider(this, CartViewModelFactory(cartRepo))[CartViewModel::class.java]
+        wishlistViewModel = ViewModelProvider(this, WishlistViewModelFactory(wishlistRepo))[WishlistViewModel::class.java]
+        userViewModel = ViewModelProvider(this, UserViewModelFactory(userRepo))[UserViewModel::class.java]
 
         setContent {
-            UserDashboardBody(cartViewModel, wishlistViewModel)
+            UserDashboardBody(cartViewModel, wishlistViewModel, userViewModel)
         }
     }
 }
@@ -63,7 +55,8 @@ class UserDashboardActivity : ComponentActivity() {
 @Composable
 fun UserDashboardBody(
     cartViewModel: CartViewModel,
-    wishlistViewModel: WishlistViewModel
+    wishlistViewModel: WishlistViewModel,
+    userViewModel: UserViewModel
 ) {
     val context = LocalContext.current
     val repo = remember { ProductRepositoryImpl() }
@@ -75,11 +68,18 @@ fun UserDashboardBody(
     var menuExpanded by remember { mutableStateOf(false) }
     var searchQuery by remember { mutableStateOf("") }
 
-    LaunchedEffect(Unit) {
+    val currentUserId = userViewModel.getCurrentUser()?.uid
+    val user by userViewModel.users.observeAsState()
+
+    // Load user info and products
+    LaunchedEffect(currentUserId) {
+        currentUserId?.let {
+            userViewModel.getUserById(it)
+        }
         productViewModel.getAllProducts()
     }
 
-    // Call filter whenever searchQuery changes
+    // Search filter
     LaunchedEffect(searchQuery) {
         productViewModel.filterProducts(searchQuery)
     }
@@ -156,6 +156,14 @@ fun UserDashboardBody(
                 .padding(padding)
                 .fillMaxSize()
         ) {
+            // Welcome Message
+            Text(
+                text = "Welcome, ${user?.firstName ?: "User"}!",
+                modifier = Modifier.padding(12.dp),
+                style = MaterialTheme.typography.titleLarge
+            )
+
+            // Search Field
             TextField(
                 value = searchQuery,
                 onValueChange = { searchQuery = it },
@@ -163,17 +171,17 @@ fun UserDashboardBody(
                 singleLine = true,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(8.dp)
+                    .padding(horizontal = 12.dp, vertical = 4.dp)
             )
 
+            // Product List
             if (loading) {
                 Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                     CircularProgressIndicator()
                 }
             } else {
                 LazyColumn(
-                    modifier = Modifier
-                        .padding(8.dp)
+                    modifier = Modifier.padding(8.dp)
                 ) {
                     items(filteredProducts.size) { index ->
                         val product = filteredProducts[index]
@@ -190,7 +198,7 @@ fun UserDashboardBody(
                                     style = MaterialTheme.typography.titleMedium
                                 )
                                 Text(
-                                    text = "Rs. ${product?.productPrice ?: 0}",
+                                    text = "Rs. ${product?.productPrice ?: 0.0}",
                                     color = Color.White
                                 )
                                 Text(
@@ -235,3 +243,10 @@ fun UserDashboardBody(
         }
     }
 }
+
+
+
+
+
+
+
