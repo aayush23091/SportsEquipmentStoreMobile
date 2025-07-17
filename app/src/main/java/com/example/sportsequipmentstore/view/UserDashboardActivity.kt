@@ -1,6 +1,6 @@
+
 package com.example.sportsequipmentstore.view
 
-import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
 import android.widget.Toast
@@ -10,14 +10,18 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import com.example.sportsequipmentstore.LoginActivity
 import com.example.sportsequipmentstore.model.CartItemModel
 import com.example.sportsequipmentstore.repository.CartRepositoryImpl
 import com.example.sportsequipmentstore.repository.ProductRepositoryImpl
@@ -51,6 +55,7 @@ fun UserDashboardBody(cartViewModel: CartViewModel) {
 
     val products by productViewModel.allProducts.observeAsState(initial = emptyList())
     val loading by productViewModel.loading.observeAsState(initial = true)
+    var menuExpanded by remember { mutableStateOf(false) }
 
     LaunchedEffect(Unit) {
         productViewModel.getAllProducts()
@@ -61,8 +66,40 @@ fun UserDashboardBody(cartViewModel: CartViewModel) {
             TopAppBar(
                 title = { Text("RetroCrugSports") },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = Color(0xFF4CAF50) // Green background for TopAppBar
-                )
+                    containerColor = Color(0xFF4CAF50),
+                    titleContentColor = Color.White
+                ),
+                actions = {
+                    // Edit Profile Icon
+                    IconButton(onClick = {
+                        val intent = Intent(context, EditProfileActivity::class.java)
+                        context.startActivity(intent)
+                    }) {
+                        Icon(Icons.Default.Person, contentDescription = "Edit Profile", tint = Color.White)
+                    }
+
+                    // Dropdown menu for logout
+                    Box {
+                        IconButton(onClick = { menuExpanded = true }) {
+                            Icon(Icons.Default.MoreVert, contentDescription = "Menu", tint = Color.White)
+                        }
+                        DropdownMenu(
+                            expanded = menuExpanded,
+                            onDismissRequest = { menuExpanded = false }
+                        ) {
+                            DropdownMenuItem(
+                                text = { Text("Logout") },
+                                onClick = {
+                                    menuExpanded = false
+                                    Toast.makeText(context, "Logged out", Toast.LENGTH_SHORT).show()
+                                    val intent = Intent(context, LoginActivity::class.java)
+                                    intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                                    context.startActivity(intent)
+                                }
+                            )
+                        }
+                    }
+                }
             )
         },
         floatingActionButton = {
@@ -75,11 +112,11 @@ fun UserDashboardBody(cartViewModel: CartViewModel) {
                 Icon(Icons.Default.ShoppingCart, contentDescription = "View Cart")
             }
         },
-        modifier = Modifier.background(Color(0xFF4CAF50)) // Green background for Scaffold content
+        modifier = Modifier.background(Color(0xFF4CAF50))
     ) { padding ->
 
         if (loading) {
-            Box(Modifier.fillMaxSize(), contentAlignment = androidx.compose.ui.Alignment.Center) {
+            Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                 CircularProgressIndicator()
             }
         } else {
@@ -94,7 +131,7 @@ fun UserDashboardBody(cartViewModel: CartViewModel) {
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(vertical = 8.dp),
-                        colors = CardDefaults.cardColors(containerColor = Color(0xFF4CAF50)) // Green background
+                        colors = CardDefaults.cardColors(containerColor = Color(0xFF4CAF50))
                     ) {
                         Column(Modifier.padding(16.dp)) {
                             Text(
@@ -110,7 +147,6 @@ fun UserDashboardBody(cartViewModel: CartViewModel) {
                                 text = product?.productDescription ?: "",
                                 color = Color.White
                             )
-
                             Button(
                                 onClick = {
                                     val cartItem = CartItemModel(
