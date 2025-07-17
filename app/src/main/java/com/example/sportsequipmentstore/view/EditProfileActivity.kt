@@ -1,3 +1,4 @@
+
 package com.example.sportsequipmentstore.view
 
 import android.app.Activity
@@ -7,6 +8,7 @@ import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -16,10 +18,10 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.*
+import androidx.compose.material3.AlertDialog
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Color.Companion.Green
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -48,20 +50,28 @@ class EditProfileActivity : ComponentActivity() {
         setContent {
             EditProfileScreen(
                 selectedImageUri = selectedImageUri,
-                onPickImage = { imageUtils.launchImagePicker() }
+                onPickImage = { imageUtils.launchImagePicker() },
+                onRemoveImage = { selectedImageUri = null }
             )
         }
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun EditProfileScreen(
     selectedImageUri: Uri?,
-    onPickImage: () -> Unit
+    onPickImage: () -> Unit,
+    onRemoveImage: () -> Unit
 ) {
     var name by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
     var phone by remember { mutableStateOf("") }
+    var showPasswordDialog by remember { mutableStateOf(false) }
+    var newPassword by remember { mutableStateOf("") }
+    var confirmPassword by remember { mutableStateOf("") }
+    var passwordError by remember { mutableStateOf<String?>(null) }
+    var showImageOptionsMenu by remember { mutableStateOf(false) }
 
     val context = LocalContext.current
     val activity = context as? Activity
@@ -70,12 +80,11 @@ fun EditProfileScreen(
     val repo = remember { ProductRepositoryImpl() }
     val viewModel = remember { ProductViewModel(repo) }
 
-    // Prefill current values from Firebase Auth
     LaunchedEffect(Unit) {
         currentUser?.let {
             name = it.displayName ?: ""
             email = it.email ?: ""
-            // phone will not be loaded from anywhere, just editable
+            // phone not loaded from auth, editable only
         }
     }
 
@@ -85,17 +94,16 @@ fun EditProfileScreen(
                 .fillMaxSize()
                 .padding(innerPadding)
                 .padding(16.dp)
-                .background(color = Green)
+                .background(Color.Green)
         ) {
             Spacer(modifier = Modifier.height(20.dp))
 
             Box(
                 modifier = Modifier
                     .size(120.dp)
-                    .clickable(
-                        indication = null,
-                        interactionSource = remember { MutableInteractionSource() }
-                    ) { onPickImage() }
+                    .clickable {
+                        showImageOptionsMenu = true
+                    }
                     .background(Color.LightGray, shape = CircleShape)
                     .align(alignment = androidx.compose.ui.Alignment.CenterHorizontally)
             ) {
@@ -113,6 +121,28 @@ fun EditProfileScreen(
                         modifier = Modifier.fillMaxSize(),
                         contentScale = ContentScale.Crop
                     )
+                }
+
+                DropdownMenu(
+                    expanded = showImageOptionsMenu,
+                    onDismissRequest = { showImageOptionsMenu = false }
+                ) {
+                    DropdownMenuItem(
+                        text = { Text("Choose from Gallery") },
+                        onClick = {
+                            showImageOptionsMenu = false
+                            onPickImage()
+                        }
+                    )
+                    if (selectedImageUri != null) {
+                        DropdownMenuItem(
+                            text = { Text("Remove Photo") },
+                            onClick = {
+                                showImageOptionsMenu = false
+                                onRemoveImage()
+                            }
+                        )
+                    }
                 }
             }
 
@@ -147,6 +177,15 @@ fun EditProfileScreen(
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
                 shape = RoundedCornerShape(12.dp)
             )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            TextButton(
+                onClick = { showPasswordDialog = true },
+                modifier = Modifier.align(androidx.compose.ui.Alignment.End)
+            ) {
+                Text("Change Password", color = Color.White)
+            }
 
             Spacer(modifier = Modifier.height(24.dp))
 
@@ -208,6 +247,73 @@ fun EditProfileScreen(
             ) {
                 Text("Save Changes")
             }
+        }
+
+        if (showPasswordDialog) {
+            AlertDialog(
+                onDismissRequest = { showPasswordDialog = false },
+                title = { Text("Change Password") },
+                text = {
+                    Column {
+                        OutlinedTextField(
+                            value = newPassword,
+                            onValueChange = { newPassword = it; passwordError = null },
+                            placeholder = { Text("New Password") },
+                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+                            singleLine = true,
+                            isError = passwordError != null,
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                        OutlinedTextField(
+                            value = confirmPassword,
+                            onValueChange = { confirmPassword = it; passwordError = null },
+                            placeholder = { Text("Confirm Password") },
+                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+                            singleLine = true,
+                            isError = passwordError != null,
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                        if (passwordError != null) {
+                            Text(passwordError ?: "", color = MaterialTheme.colorScheme.error)
+                        }
+                    }
+                },
+                confirmButton = {
+                    TextButton(onClick = {
+                        if (newPassword.isBlank() || confirmPassword.isBlank()) {
+                            passwordError = "Password fields cannot be empty"
+                            return@TextButton
+                        }
+                        if (newPassword != confirmPassword) {
+                            passwordError = "Passwords do not match"
+                            return@TextButton
+                        }
+                        val user = Firebase.auth.currentUser
+                        user?.updatePassword(newPassword)?.addOnCompleteListener { task ->
+                            if (task.isSuccessful) {
+                                Toast.makeText(context, "Password changed successfully", Toast.LENGTH_SHORT).show()
+                                showPasswordDialog = false
+                                newPassword = ""
+                                confirmPassword = ""
+                            } else {
+                                Toast.makeText(context, "Failed to change password: ${task.exception?.message}", Toast.LENGTH_LONG).show()
+                            }
+                        }
+                    }) {
+                        Text("Change")
+                    }
+                },
+                dismissButton = {
+                    TextButton(onClick = {
+                        showPasswordDialog = false
+                        newPassword = ""
+                        confirmPassword = ""
+                        passwordError = null
+                    }) {
+                        Text("Cancel")
+                    }
+                }
+            )
         }
     }
 }
