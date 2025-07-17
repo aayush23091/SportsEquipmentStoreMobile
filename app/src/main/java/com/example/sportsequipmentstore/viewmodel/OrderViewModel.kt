@@ -14,21 +14,22 @@ class OrderViewModel(private val orderRepository: OrderRepository) : ViewModel()
     private val _error = MutableLiveData<String?>()
     val error: LiveData<String?> get() = _error
 
-    fun placeOrder(order: OrderModel) {
-        orderRepository.placeOrder(order) { success, message ->
+    // Load all orders (not just by user)
+    fun loadAllOrders() {
+        orderRepository.getAllOrders { list, success, message ->
             if (success) {
-                // Refresh orders after placing one
-                loadOrders(order.userId)
+                _orders.postValue(list)
+                _error.postValue(null)
             } else {
                 _error.postValue(message)
             }
         }
     }
 
-    fun loadOrders(userId: String) {
-        orderRepository.getOrdersByUser(userId) { list, success, message ->
+    fun placeOrder(order: OrderModel) {
+        orderRepository.placeOrder(order) { success, message ->
             if (success) {
-                _orders.postValue(list)
+                loadAllOrders() // Refresh after placing order
             } else {
                 _error.postValue(message)
             }
@@ -37,7 +38,9 @@ class OrderViewModel(private val orderRepository: OrderRepository) : ViewModel()
 
     fun cancelOrder(orderId: String) {
         orderRepository.cancelOrder(orderId) { success, message ->
-            if (!success) {
+            if (success) {
+                loadAllOrders() // Refresh after cancel
+            } else {
                 _error.postValue(message)
             }
         }
