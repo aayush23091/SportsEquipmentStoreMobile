@@ -12,4 +12,7 @@
     <string name="title_activity_cart_activity.kt">CartActivity.kt</string>
     <string name="title_activity_cart">CartActivity</string>
     <string name="title_activity_order">OrderActivity</string>
+    <string name="title_activity_review">ReviewActivity</string>
+    <string name="title_activity_revieww">ReviewwActivity</string>
+    <string name="title_activity_user_dashboard">UserDashboardActivity</string>
 </resources>
