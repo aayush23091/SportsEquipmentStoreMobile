@@ -16,4 +16,5 @@
     <string name="title_activity_revieww">ReviewwActivity</string>
     <string name="title_activity_user_dashboard">UserDashboardActivity</string>
     <string name="title_activity_wishlist">WishlistActivity</string>
+    <string name="title_activity_address">AddressActivity</string>
 </resources>
