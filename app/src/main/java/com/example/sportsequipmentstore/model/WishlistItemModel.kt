@@ -1,8 +1,8 @@
 package com.example.sportsequipmentstore.model
 
-data class WishlistItemModel(
-    val id: Int,
-    val name: String,
-    val price: Double,
-    val image: Int // Drawable resource ID
+data class WishlistItem(
+    val id: String = "",
+    val productName: String = "",
+    val productPrice: Double = 0.0,
+    val image: String = ""
 )

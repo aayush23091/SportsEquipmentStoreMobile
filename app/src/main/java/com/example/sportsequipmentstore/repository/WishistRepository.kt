@@ -1,10 +1,10 @@
 package com.example.sportsequipmentstore.repository
 
-import com.example.sportsequipmentstore.model.WishlistItemModel
+import com.example.sportsequipmentstore.model.WishlistItem
 
 interface WishlistRepository {
-    fun getWishlist(): List<WishlistItemModel>
-    fun addToWishlist(item: WishlistItemModel)
-    fun removeFromWishlist(item: WishlistItemModel)
+    fun getWishlist(): List<WishlistItem>
+    fun addToWishlist(item: WishlistItem)
+    fun removeFromWishlist(item: WishlistItem)
     fun clearWishlist()
 }
