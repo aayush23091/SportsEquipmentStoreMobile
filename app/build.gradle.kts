@@ -47,6 +47,7 @@ dependencies {
     implementation("com.squareup.picasso:picasso:2.8")
     implementation("io.coil-kt:coil-compose:2.2.2")
     implementation("androidx.compose.runtime:runtime-livedata:1.6.0")
+
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)
@@ -54,9 +55,13 @@ dependencies {
     implementation(libs.androidx.ui)
     implementation(libs.androidx.ui.graphics)
     implementation(libs.androidx.ui.tooling.preview)
-    implementation(libs.androidx.material3)
+
+    // ✅ Add explicit Material3 dependency
+    implementation("androidx.compose.material3:material3:1.2.1")
+
     implementation(libs.firebase.auth)
     implementation(libs.firebase.database)
+
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
