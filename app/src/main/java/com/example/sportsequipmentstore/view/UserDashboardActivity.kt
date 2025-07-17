@@ -1,4 +1,5 @@
 
+
 package com.example.sportsequipmentstore.view
 
 import android.content.Intent
@@ -25,7 +26,11 @@ import com.example.sportsequipmentstore.model.WishlistItemModel
 import com.example.sportsequipmentstore.repository.CartRepositoryImpl
 import com.example.sportsequipmentstore.repository.ProductRepositoryImpl
 import com.example.sportsequipmentstore.repository.WishlistRepositoryImpl
-import com.example.sportsequipmentstore.viewmodel.*
+import com.example.sportsequipmentstore.viewmodel.CartViewModel
+import com.example.sportsequipmentstore.viewmodel.CartViewModelFactory
+import com.example.sportsequipmentstore.viewmodel.ProductViewModel
+import com.example.sportsequipmentstore.viewmodel.WishlistViewModel
+import com.example.sportsequipmentstore.viewmodel.WishlistViewModelFactory
 
 class UserDashboardActivity : ComponentActivity() {
 
@@ -36,7 +41,7 @@ class UserDashboardActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
 
         val cartRepo = CartRepositoryImpl()
-        val wishlistRepo = WishlistRepositoryImpl // singleton instance
+        val wishlistRepo = WishlistRepositoryImpl
 
         cartViewModel = androidx.lifecycle.ViewModelProvider(
             this,
@@ -64,12 +69,19 @@ fun UserDashboardBody(
     val repo = remember { ProductRepositoryImpl() }
     val productViewModel = remember { ProductViewModel(repo) }
 
-    val products by productViewModel.allProducts.observeAsState(initial = emptyList())
+    val allProducts by productViewModel.allProducts.observeAsState(initial = emptyList())
+    val filteredProducts by productViewModel.filteredProducts.observeAsState(initial = emptyList())
     val loading by productViewModel.loading.observeAsState(initial = true)
     var menuExpanded by remember { mutableStateOf(false) }
+    var searchQuery by remember { mutableStateOf("") }
 
     LaunchedEffect(Unit) {
         productViewModel.getAllProducts()
+    }
+
+    // Call filter whenever searchQuery changes
+    LaunchedEffect(searchQuery) {
+        productViewModel.filterProducts(searchQuery)
     }
 
     Scaffold(
@@ -87,6 +99,7 @@ fun UserDashboardBody(
                     }) {
                         Icon(Icons.Default.Person, contentDescription = "Edit Profile", tint = Color.White)
                     }
+
                     Box {
                         IconButton(onClick = { menuExpanded = true }) {
                             Icon(Icons.Default.MoreVert, contentDescription = "Menu", tint = Color.White)
@@ -135,70 +148,84 @@ fun UserDashboardBody(
                     label = { Text("Wishlist") }
                 )
             }
-        },
-        modifier = Modifier.background(Color(0xFF4CAF50))
+        }
     ) { padding ->
 
-        if (loading) {
-            Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                CircularProgressIndicator()
-            }
-        } else {
-            LazyColumn(
+        Column(
+            Modifier
+                .padding(padding)
+                .fillMaxSize()
+        ) {
+            TextField(
+                value = searchQuery,
+                onValueChange = { searchQuery = it },
+                placeholder = { Text("Search products...") },
+                singleLine = true,
                 modifier = Modifier
-                    .padding(padding)
+                    .fillMaxWidth()
                     .padding(8.dp)
-            ) {
-                items(products.size) { index ->
-                    val product = products[index]
-                    Card(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(vertical = 8.dp),
-                        colors = CardDefaults.cardColors(containerColor = Color(0xFF4CAF50))
-                    ) {
-                        Column(Modifier.padding(16.dp)) {
-                            Text(
-                                text = product?.productName ?: "No Name",
-                                color = Color.White,
-                                style = MaterialTheme.typography.titleMedium
-                            )
-                            Text(
-                                text = "Rs. ${product?.productPrice ?: 0}",
-                                color = Color.White
-                            )
-                            Text(
-                                text = product?.productDescription ?: "",
-                                color = Color.White
-                            )
-                            Row(
-                                Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.SpaceBetween
-                            ) {
-                                Button(onClick = {
-                                    val cartItem = CartItemModel(
-                                        id = "",
-                                        productName = product?.productName ?: "",
-                                        productPrice = product?.productPrice ?: 0.0,
-                                        image = product?.image ?: "",
-                                        quantity = 1
-                                    )
-                                    cartViewModel.addToCart(cartItem)
-                                    Toast.makeText(context, "Added to cart", Toast.LENGTH_SHORT).show()
-                                }) {
-                                    Text("Add to Cart")
-                                }
+            )
 
-                                OutlinedButton(onClick = {
-                                    val item = WishlistItemModel(
-                                        productName = product?.productName ?: "",
-                                        productPrice = product?.productPrice ?: 0.0,
-                                        image = product?.image ?: ""
-                                    )
-                                    wishlistViewModel.addToWishlist(item)
-                                    Toast.makeText(context, "Added to wishlist", Toast.LENGTH_SHORT).show()
-                                }) {
-                                    Text("❤️ Wishlist")
+            if (loading) {
+                Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    CircularProgressIndicator()
+                }
+            } else {
+                LazyColumn(
+                    modifier = Modifier
+                        .padding(8.dp)
+                ) {
+                    items(filteredProducts.size) { index ->
+                        val product = filteredProducts[index]
+                        Card(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 8.dp),
+                            colors = CardDefaults.cardColors(containerColor = Color(0xFF4CAF50))
+                        ) {
+                            Column(Modifier.padding(16.dp)) {
+                                Text(
+                                    text = product?.productName ?: "No Name",
+                                    color = Color.White,
+                                    style = MaterialTheme.typography.titleMedium
+                                )
+                                Text(
+                                    text = "Rs. ${product?.productPrice ?: 0}",
+                                    color = Color.White
+                                )
+                                Text(
+                                    text = product?.productDescription ?: "",
+                                    color = Color.White
+                                )
+                                Row(
+                                    Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.SpaceBetween
+                                ) {
+                                    Button(onClick = {
+                                        val cartItem = CartItemModel(
+                                            id = "",
+                                            productName = product?.productName ?: "",
+                                            productPrice = product?.productPrice ?: 0.0,
+                                            image = product?.image ?: "",
+                                            quantity = 1
+                                        )
+                                        cartViewModel.addToCart(cartItem)
+                                        Toast.makeText(context, "Added to cart", Toast.LENGTH_SHORT).show()
+                                    }) {
+                                        Text("Add to Cart")
+                                    }
+
+                                    OutlinedButton(onClick = {
+                                        val item = WishlistItemModel(
+                                            productName = product?.productName ?: "",
+                                            productPrice = product?.productPrice ?: 0.0,
+                                            image = product?.image ?: ""
+                                        )
+                                        wishlistViewModel.addToWishlist(item)
+                                        Toast.makeText(context, "Added to wishlist", Toast.LENGTH_SHORT).show()
+                                    }) {
+                                        Text("❤️ Wishlist")
+                                    }
                                 }
                             }
                         }
