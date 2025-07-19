@@ -1,5 +1,4 @@
 
-
 package com.example.sportsequipmentstore.view
 
 import android.content.Intent
@@ -28,6 +27,7 @@ import coil.compose.AsyncImage
 import coil.request.CachePolicy
 import coil.request.ImageRequest
 import com.example.sportsequipmentstore.LoginActivity
+import com.example.sportsequipmentstore.R
 import com.example.sportsequipmentstore.model.CartItemModel
 import com.example.sportsequipmentstore.model.WishlistItemModel
 import com.example.sportsequipmentstore.repository.*
@@ -42,12 +42,10 @@ class UserDashboardActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        // Initialize Repositories
         val cartRepo = CartRepositoryImpl()
         val wishlistRepo = WishlistRepositoryImpl
         val userRepo = UserRepositoryImplementation()
 
-        // Initialize ViewModels
         cartViewModel = ViewModelProvider(this, CartViewModelFactory(cartRepo))[CartViewModel::class.java]
         wishlistViewModel = ViewModelProvider(this, WishlistViewModelFactory(wishlistRepo))[WishlistViewModel::class.java]
         userViewModel = ViewModelProvider(this, UserViewModelFactory(userRepo))[UserViewModel::class.java]
@@ -59,7 +57,6 @@ class UserDashboardActivity : ComponentActivity() {
 
     override fun onResume() {
         super.onResume()
-        // Refresh user data each time activity resumes to reflect profile image changes
         userViewModel.getCurrentUser()?.uid?.let {
             userViewModel.getUserById(it)
         }
@@ -78,7 +75,6 @@ fun UserDashboardBody(
     val productViewModel = remember { ProductViewModel(repo) }
 
     val currentUserId = userViewModel.getCurrentUser()?.uid
-
     val user by userViewModel.users.observeAsState()
     val allProducts by productViewModel.allProducts.observeAsState(initial = emptyList())
     val filteredProducts by productViewModel.filteredProducts.observeAsState(initial = emptyList())
@@ -120,6 +116,13 @@ fun UserDashboardBody(
                             expanded = menuExpanded,
                             onDismissRequest = { menuExpanded = false }
                         ) {
+                            DropdownMenuItem(
+                                text = { Text("Address Book") },
+                                onClick = {
+                                    menuExpanded = false
+                                    context.startActivity(Intent(context, AddressActivity::class.java))
+                                }
+                            )
                             DropdownMenuItem(
                                 text = { Text("Logout") },
                                 onClick = {
@@ -168,7 +171,6 @@ fun UserDashboardBody(
                 .padding(padding)
                 .fillMaxSize()
         ) {
-            // Welcome row with profile picture
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier.padding(12.dp)
@@ -181,13 +183,13 @@ fun UserDashboardBody(
                     AsyncImage(
                         model = ImageRequest.Builder(LocalContext.current)
                             .data(user?.image)
-                            .diskCachePolicy(CachePolicy.DISABLED)    // Disable cache to always load fresh image
+                            .diskCachePolicy(CachePolicy.DISABLED)
                             .memoryCachePolicy(CachePolicy.DISABLED)
                             .build(),
                         contentDescription = "Profile Picture",
                         modifier = imageModifier,
                         contentScale = ContentScale.Crop,
-                        error = painterResource(id = com.example.sportsequipmentstore.R.drawable.profilepicplaceholder)
+                        error = painterResource(id = R.drawable.profilepicplaceholder)
                     )
                 } else {
                     Icon(
@@ -206,7 +208,6 @@ fun UserDashboardBody(
                 )
             }
 
-            // Search Field
             TextField(
                 value = searchQuery,
                 onValueChange = { searchQuery = it },
@@ -217,7 +218,6 @@ fun UserDashboardBody(
                     .padding(horizontal = 12.dp, vertical = 4.dp)
             )
 
-            // Product List
             if (loading) {
                 Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                     CircularProgressIndicator()
@@ -284,5 +284,4 @@ fun UserDashboardBody(
         }
     }
 }
-
 
