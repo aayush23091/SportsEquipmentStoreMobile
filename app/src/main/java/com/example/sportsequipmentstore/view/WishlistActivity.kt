@@ -17,34 +17,49 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.ViewModelProvider
+import com.example.sportsequipmentstore.model.CartItemModel
 import com.example.sportsequipmentstore.model.WishlistItemModel
+import com.example.sportsequipmentstore.repository.CartRepositoryImpl
 import com.example.sportsequipmentstore.repository.WishlistRepositoryImpl
+import com.example.sportsequipmentstore.viewmodel.CartViewModel
+import com.example.sportsequipmentstore.viewmodel.CartViewModelFactory
 import com.example.sportsequipmentstore.viewmodel.WishlistViewModel
 import com.example.sportsequipmentstore.viewmodel.WishlistViewModelFactory
 
 class WishlistActivity : ComponentActivity() {
     private lateinit var wishlistViewModel: WishlistViewModel
+    private lateinit var cartViewModel: CartViewModel
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        wishlistViewModel = androidx.lifecycle.ViewModelProvider(
+        // Initialize WishlistViewModel
+        wishlistViewModel = ViewModelProvider(
             this,
             WishlistViewModelFactory(WishlistRepositoryImpl)
         )[WishlistViewModel::class.java]
 
+        // Initialize CartViewModel
+        cartViewModel = ViewModelProvider(
+            this,
+            CartViewModelFactory(CartRepositoryImpl())
+        )[CartViewModel::class.java]
+
         setContent {
-            WishlistScreen(wishlistViewModel)
+            WishlistScreen(wishlistViewModel, cartViewModel)
         }
     }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun WishlistScreen(viewModel: WishlistViewModel) {
+fun WishlistScreen(
+    wishlistViewModel: WishlistViewModel,
+    cartViewModel: CartViewModel
+) {
     val context = LocalContext.current
-
-    val wishlistItems by viewModel.wishlistItems.collectAsState()
+    val wishlistItems by wishlistViewModel.wishlistItems.collectAsState()
 
     Scaffold(
         topBar = {
@@ -71,10 +86,18 @@ fun WishlistScreen(viewModel: WishlistViewModel) {
                         .padding(8.dp)
                 ) {
                     items(wishlistItems) { item ->
-                        WishlistItemCard(item = item, onRemove = {
-                            viewModel.removeFromWishlist(item)
-                            Toast.makeText(context, "Removed from wishlist", Toast.LENGTH_SHORT).show()
-                        })
+                        WishlistItemCard(
+                            item = item,
+                            onRemove = {
+                                wishlistViewModel.removeFromWishlist(item)
+                                Toast.makeText(context, "Removed from wishlist", Toast.LENGTH_SHORT).show()
+                            },
+                            onAddToCart = {
+                                val cartItem = item.toCartItem()
+                                cartViewModel.addToCart(cartItem)
+                                Toast.makeText(context, "Added to cart", Toast.LENGTH_SHORT).show()
+                            }
+                        )
                     }
                 }
             }
@@ -83,22 +106,40 @@ fun WishlistScreen(viewModel: WishlistViewModel) {
 }
 
 @Composable
-fun WishlistItemCard(item: WishlistItemModel, onRemove: () -> Unit) {
+fun WishlistItemCard(
+    item: WishlistItemModel,
+    onRemove: () -> Unit,
+    onAddToCart: () -> Unit
+) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 6.dp)
-            .background(Color.White),
+            .padding(vertical = 6.dp),
         colors = CardDefaults.cardColors(containerColor = Color(0xFFE0F2F1))
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
             Text(text = item.productName, fontSize = 18.sp, color = Color.Black)
             Text(text = "Price: Rs. ${item.productPrice}", color = Color.DarkGray)
             Spacer(modifier = Modifier.height(8.dp))
-            Button(onClick = onRemove) {
-                Text("Remove from Wishlist")
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                Button(onClick = onAddToCart) {
+                    Text("Add to Cart")
+                }
+                Button(onClick = onRemove, colors = ButtonDefaults.buttonColors(containerColor = Color.Red)) {
+                    Text("Remove")
+                }
             }
         }
     }
 }
 
+
+fun WishlistItemModel.toCartItem(): CartItemModel {
+    return CartItemModel(
+        id = "", // You can generate ID later or leave blank for auto generation
+        productName = this.productName,
+        productPrice = this.productPrice,
+        image = this.image,
+        quantity = 1
+    )
+}
