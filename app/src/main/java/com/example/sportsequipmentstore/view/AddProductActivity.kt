@@ -1,3 +1,4 @@
+
 package com.example.sportsequipmentstore.view
 
 import android.app.Activity
@@ -12,27 +13,16 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material3.Button
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.setValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowDropDown
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Color.Companion.Green
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -41,7 +31,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import com.example.sportsequipmentstore.R
-import com.example.sportsequipmentstore.view.ui.theme.SportsEquipmentStoreTheme
 import com.example.sportsequipmentstore.model.ProductModel
 import com.example.sportsequipmentstore.repository.ProductRepositoryImpl
 import com.example.sportsequipmentstore.utils.ImageUtils
@@ -67,15 +56,18 @@ class AddProductActivity : ComponentActivity() {
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddProductBody(
     selectedImageUri: Uri?,
     onPickImage: () -> Unit
-
 ) {
     var pName by remember { mutableStateOf("") }
     var pPrice by remember { mutableStateOf("") }
     var pDesc by remember { mutableStateOf("") }
+    var pCategory by remember { mutableStateOf("Cricket") }
+
+    val categories = listOf("Cricket", "Football", "Tennis", "Rugby", "Badminton")
 
     val repo = remember { ProductRepositoryImpl() }
     val viewModel = remember { ProductViewModel(repo) }
@@ -83,9 +75,7 @@ fun AddProductBody(
     val context = LocalContext.current
     val activity = context as? Activity
 
-
-
-
+    var categoryExpanded by remember { mutableStateOf(false) }
 
     Scaffold { innerPadding ->
         LazyColumn(
@@ -93,10 +83,10 @@ fun AddProductBody(
                 .fillMaxSize()
                 .padding(innerPadding)
                 .padding(10.dp)
-                .background(color = Green)
-
+                .background(color = Color(0xFFA5D6A7)) // light green
         ) {
             item {
+                // Image Picker
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -126,7 +116,7 @@ fun AddProductBody(
                     }
                 }
 
-
+                // Product Name
                 OutlinedTextField(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -137,6 +127,7 @@ fun AddProductBody(
                     onValueChange = { pName = it }
                 )
 
+                // Product Description
                 OutlinedTextField(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -147,6 +138,7 @@ fun AddProductBody(
                     onValueChange = { pDesc = it }
                 )
 
+                // Product Price
                 OutlinedTextField(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -158,6 +150,39 @@ fun AddProductBody(
                     onValueChange = { pPrice = it }
                 )
 
+                // Category Dropdown
+                ExposedDropdownMenuBox(
+                    expanded = categoryExpanded,
+                    onExpandedChange = { categoryExpanded = !categoryExpanded },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 10.dp, vertical = 5.dp)
+                ) {
+                    OutlinedTextField(
+                        value = pCategory,
+                        onValueChange = {},
+                        readOnly = true,
+                        label = { Text("Category") },
+                        trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = categoryExpanded) },
+                        modifier = Modifier.menuAnchor()
+                    )
+                    ExposedDropdownMenu(
+                        expanded = categoryExpanded,
+                        onDismissRequest = { categoryExpanded = false }
+                    ) {
+                        categories.forEach { cat ->
+                            DropdownMenuItem(
+                                text = { Text(cat) },
+                                onClick = {
+                                    pCategory = cat
+                                    categoryExpanded = false
+                                }
+                            )
+                        }
+                    }
+                }
+
+                // Submit Button
                 Button(
                     onClick = {
                         if (selectedImageUri != null) {
@@ -166,9 +191,10 @@ fun AddProductBody(
                                     val model = ProductModel(
                                         "",
                                         pName,
-                                        pPrice.toDouble(),
+                                        pPrice.toDoubleOrNull() ?: 0.0,
                                         pDesc,
-                                        imageUrl
+                                        imageUrl,
+                                        pCategory
                                     )
                                     viewModel.addProduct(model) { success, message ->
                                         Toast.makeText(context, message, Toast.LENGTH_LONG).show()
@@ -185,8 +211,6 @@ fun AddProductBody(
                                 Toast.LENGTH_SHORT
                             ).show()
                         }
-
-
                     },
                     modifier = Modifier
                         .fillMaxWidth()
@@ -199,11 +223,11 @@ fun AddProductBody(
     }
 }
 
-@Preview
+@Preview(showBackground = true)
 @Composable
-fun previewAddProductBody() {
+fun PreviewAddProductBody() {
     AddProductBody(
-        selectedImageUri = null, // or pass a mock Uri if needed
-        onPickImage = {} // no-op
+        selectedImageUri = null,
+        onPickImage = {}
     )
 }

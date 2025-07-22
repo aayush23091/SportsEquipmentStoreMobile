@@ -79,3 +79,5 @@ class UserViewModel (val repo: UserRepository): ViewModel() {
         repo.logout (callback)
     }
 }
+
+

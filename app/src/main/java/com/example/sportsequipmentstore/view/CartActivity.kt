@@ -2,6 +2,7 @@
 
 package com.example.sportsequipmentstore.view
 
+import OrderViewModel
 import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.ComponentActivity
@@ -30,7 +31,6 @@ import com.example.sportsequipmentstore.repository.CartRepositoryImpl
 import com.example.sportsequipmentstore.repository.OrderRepositoryImpl
 import com.example.sportsequipmentstore.viewmodel.CartViewModel
 import com.example.sportsequipmentstore.viewmodel.CartViewModelFactory
-import com.example.sportsequipmentstore.viewmodel.OrderViewModel
 import com.example.sportsequipmentstore.viewmodel.OrderViewModelFactory
 import com.example.sportsequipmentstore.ui.theme.SportsEquipmentStoreTheme
 
