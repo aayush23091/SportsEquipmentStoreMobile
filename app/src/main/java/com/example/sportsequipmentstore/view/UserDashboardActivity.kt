@@ -1,5 +1,4 @@
 
-
 package com.example.sportsequipmentstore.view
 
 import OrderViewModel
@@ -14,6 +13,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
@@ -63,7 +63,7 @@ class UserDashboardActivity : ComponentActivity() {
         val currentUserId = userViewModel.getCurrentUser()?.uid
         currentUserId?.let {
             userViewModel.getUserById(it)
-            orderViewModel.loadOrdersByUser(it)  // Load orders only for current user!
+            orderViewModel.loadOrdersByUser(it)
         }
     }
 }
@@ -83,22 +83,23 @@ fun UserDashboardBody(
     val currentUserId = userViewModel.getCurrentUser()?.uid
     val user by userViewModel.users.observeAsState()
     val filteredProducts by productViewModel.filteredProducts.observeAsState(emptyList())
-    val orders by orderViewModel.userOrders.observeAsState(emptyList()) // ✅ Fix
+    val orders by orderViewModel.userOrders.observeAsState(emptyList())
     val loading by productViewModel.loading.observeAsState(true)
 
     var menuExpanded by remember { mutableStateOf(false) }
     var searchQuery by remember { mutableStateOf("") }
+    var selectedCategory by remember { mutableStateOf("All") }
 
     LaunchedEffect(currentUserId) {
         currentUserId?.let {
             userViewModel.getUserById(it)
-            orderViewModel.loadOrdersByUser(it)  // Ensure orders load for current user
+            orderViewModel.loadOrdersByUser(it)
         }
         productViewModel.getAllProducts()
     }
 
-    LaunchedEffect(searchQuery) {
-        productViewModel.filterProducts(searchQuery)
+    LaunchedEffect(searchQuery, selectedCategory) {
+        productViewModel.filterByCategoryAndSearch(selectedCategory, searchQuery)
     }
 
     Scaffold(
@@ -106,7 +107,7 @@ fun UserDashboardBody(
             TopAppBar(
                 title = { Text("RetroCrugSports") },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = Color(0xFF4CAF50),
+                    containerColor = Color(0xFF4CAF50), // Green top bar
                     titleContentColor = Color.White
                 ),
                 actions = {
@@ -147,24 +148,24 @@ fun UserDashboardBody(
             )
         },
         bottomBar = {
-            NavigationBar {
+            NavigationBar(containerColor = Color(0xFF4CAF50)) { // Green bottom nav
                 NavigationBarItem(
                     selected = true,
                     onClick = {},
-                    icon = { Icon(Icons.Default.Home, contentDescription = "Home") },
-                    label = { Text("Home") }
+                    icon = { Icon(Icons.Default.Home, contentDescription = "Home", tint = Color.White) },
+                    label = { Text("Home", color = Color.White) }
                 )
                 NavigationBarItem(
                     selected = false,
                     onClick = { context.startActivity(Intent(context, CartActivity::class.java)) },
-                    icon = { Icon(Icons.Default.ShoppingCart, contentDescription = "Cart") },
-                    label = { Text("Cart") }
+                    icon = { Icon(Icons.Default.ShoppingCart, contentDescription = "Cart", tint = Color.White) },
+                    label = { Text("Cart", color = Color.White) }
                 )
                 NavigationBarItem(
                     selected = false,
                     onClick = { context.startActivity(Intent(context, WishlistActivity::class.java)) },
-                    icon = { Icon(Icons.Default.FavoriteBorder, contentDescription = "Wishlist") },
-                    label = { Text("Wishlist") }
+                    icon = { Icon(Icons.Default.FavoriteBorder, contentDescription = "Wishlist", tint = Color.White) },
+                    label = { Text("Wishlist", color = Color.White) }
                 )
             }
         }
@@ -176,8 +177,6 @@ fun UserDashboardBody(
                 .fillMaxSize()
         ) {
             UserHeader(user)
-
-
 
             Column {
                 TextField(
@@ -191,7 +190,6 @@ fun UserDashboardBody(
                 )
 
                 val categories = listOf("All", "Cricket", "Football", "Rugby", "Tennis")
-                var selectedCategory by remember { mutableStateOf("All") }
 
                 LazyRow(
                     modifier = Modifier
@@ -206,6 +204,12 @@ fun UserDashboardBody(
                                 productViewModel.filterByCategoryAndSearch(category, searchQuery)
                             },
                             label = { Text(category) },
+                            colors = FilterChipDefaults.filterChipColors(
+                                selectedContainerColor = Color(0xFF4CAF50), // Green when selected
+                                selectedLabelColor = Color.White,
+                                containerColor = Color.LightGray,
+                                labelColor = Color.Black
+                            ),
                             modifier = Modifier.padding(end = 8.dp)
                         )
                     }
@@ -233,7 +237,7 @@ fun UserDashboardBody(
                     modifier = Modifier.padding(start = 12.dp, top = 8.dp)
                 )
                 LazyColumn(
-                    modifier = Modifier.fillMaxHeight(0.4f) // restrict height to avoid scroll conflict
+                    modifier = Modifier.fillMaxHeight(0.4f)
                 ) {
                     items(orders) { order ->
                         Card(
@@ -304,7 +308,11 @@ fun ProductCard(
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(8.dp)
+            .padding(8.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = Color(0xFFC8E6C9) // Light green background
+        ),
+        elevation = CardDefaults.cardElevation(4.dp)
     ) {
         Column(modifier = Modifier.padding(12.dp)) {
 
@@ -323,41 +331,60 @@ fun ProductCard(
             Text(text = product.productName ?: "Unnamed", style = MaterialTheme.typography.titleMedium)
             Text(text = "Rs. ${product.productPrice ?: 0}", style = MaterialTheme.typography.bodyLarge)
 
+            product.category?.let {
+                Box(
+                    modifier = Modifier
+                        .padding(top = 6.dp)
+                        .background(Color(0xFF4CAF50), shape = RoundedCornerShape(6.dp)) // Green category box
+                        .padding(horizontal = 8.dp, vertical = 4.dp)
+                ) {
+                    Text(
+                        text = it,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = Color.White
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(8.dp))
+
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                Button(onClick = {
-                    val cartItem = CartItemModel(
-                        productId = product.productId ?: "",
-                        productName =  product.productName ?: "",
-                        productPrice = product.productPrice ?: 0.0,
-                        image = product.image ?: "",
-                        quantity = 1
+                Button(
+                    onClick = {
+                        val cartItem = CartItemModel(
+                            productId = product.productId ?: "",
+                            productName = product.productName ?: "",
+                            productPrice = product.productPrice ?: 0.0,
+                            image = product.image ?: "",
+                            quantity = 1
+                        )
+                        cartViewModel.addToCart(cartItem)
+                        Toast.makeText(context, "Added to cart", Toast.LENGTH_SHORT).show()
+                    },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color(0xFF4CAF50), // Green add to cart button
+                        contentColor = Color.White
                     )
-                    cartViewModel.addToCart(cartItem)
-                    Toast.makeText(context, "Added to cart", Toast.LENGTH_SHORT).show()
-                }) {
+                ) {
                     Text("Add to Cart")
                 }
 
                 IconButton(onClick = {
                     val wishlistItem = WishlistItemModel(
                         productName = product.productName ?: "",
-                        productPrice = product.productPrice?: 0.0,
+                        productPrice = product.productPrice ?: 0.0,
                         image = product.image ?: ""
                     )
                     wishlistViewModel.addToWishlist(wishlistItem)
                     Toast.makeText(context, "Added to wishlist", Toast.LENGTH_SHORT).show()
                 }) {
-                    Icon(Icons.Default.FavoriteBorder, contentDescription = "Wishlist")
+                    Icon(Icons.Default.FavoriteBorder, contentDescription = "Wishlist", tint = Color.Red)
                 }
             }
         }
     }
 }
-
-
-
-
-
