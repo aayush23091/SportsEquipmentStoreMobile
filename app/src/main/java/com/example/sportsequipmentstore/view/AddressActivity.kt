@@ -1,3 +1,5 @@
+
+
 package com.example.sportsequipmentstore.view
 
 import android.os.Bundle
@@ -21,10 +23,17 @@ import com.example.sportsequipmentstore.viewmodel.AddressViewModel
 import java.util.*
 
 class AddressActivity : ComponentActivity() {
+
+    private val greenColor = Color(0xFF4CAF50)  // Same green as UserDashboard
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            Surface(modifier = Modifier.fillMaxSize().background(Color.Green)) {
+            Surface(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(greenColor)
+            ) {
                 AddressScreen(userId = "demo_user_id") // Replace with real userId
             }
         }
@@ -33,6 +42,7 @@ class AddressActivity : ComponentActivity() {
 
 @Composable
 fun AddressScreen(userId: String) {
+    val greenColor = Color(0xFF4CAF50)  // Same green as UserDashboard
     val viewModel = remember { AddressViewModel(AddressRepositoryImpl()) }
     val context = LocalContext.current
 
@@ -53,10 +63,12 @@ fun AddressScreen(userId: String) {
         loadAddresses()
     }
 
-    Column(modifier = Modifier
-        .padding(16.dp)
-        .fillMaxSize()
-        .background(Color.Green)) {
+    Column(
+        modifier = Modifier
+            .padding(16.dp)
+            .fillMaxSize()
+            .background(greenColor)
+    ) {
 
         Text(
             text = if (selectedId == null) "Add Address" else "Update Address",
