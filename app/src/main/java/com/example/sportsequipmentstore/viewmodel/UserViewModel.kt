@@ -9,14 +9,6 @@ import com.google.firebase.auth.FirebaseUser
 
 class UserViewModel (val repo: UserRepository): ViewModel() {
 
-    //login
-    //register
-    //forgetPassword
-    //UpdateProfile
-    //getUserDetails
-    //getCurrentUser
-    //addUserToDatabase
-    //logout
 
     fun login(
         email: String, password: String,
