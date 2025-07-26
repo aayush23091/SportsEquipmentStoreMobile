@@ -19,4 +19,6 @@
     <string name="title_activity_address">AddressActivity</string>
     <string name="title_activity_orders">OrdersActivity</string>
     <string name="title_activity_user_order">UserOrderActivity</string>
+    <string name="title_activity_user_homepage">UserHomepageActivity</string>
+    <string name="title_activity_test">TestActivity</string>
 </resources>

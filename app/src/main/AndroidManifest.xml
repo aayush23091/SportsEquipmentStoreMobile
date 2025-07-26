@@ -20,10 +20,11 @@
         android:theme="@style/Theme.SportsEquipmentStore"
         tools:replace="android:fullBackupContent"
         tools:targetApi="31">
+
         <activity
-            android:name=".view.UserOrderActivity"
+            android:name=".view.UserDashboardActivity"
             android:exported="true"
-            android:label="@string/title_activity_user_order"
+            android:label="@string/title_activity_user_dashboard"
             android:theme="@style/Theme.SportsEquipmentStore">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -32,9 +33,9 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".view.OrdersActivity"
+            android:name=".view.UserOrderActivity"
             android:exported="true"
-            android:label="@string/title_activity_orders"
+            android:label="@string/title_activity_user_order"
             android:theme="@style/Theme.SportsEquipmentStore">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -58,17 +59,6 @@
             android:name=".view.WishlistActivity"
             android:exported="true"
             android:label="@string/title_activity_wishlist"
-            android:theme="@style/Theme.SportsEquipmentStore">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
-        </activity>
-        <activity
-            android:name=".view.UserDashboardActivity"
-            android:exported="true"
-            android:label="@string/title_activity_user_dashboard"
             android:theme="@style/Theme.SportsEquipmentStore">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
