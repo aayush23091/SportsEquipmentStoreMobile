@@ -1,5 +1,412 @@
 
 
+//package com.example.sportsequipmentstore.view
+//
+//import android.os.Bundle
+//import android.widget.Toast
+//import androidx.activity.ComponentActivity
+//import androidx.activity.compose.setContent
+//import androidx.compose.foundation.background
+//import androidx.compose.foundation.clickable
+//import androidx.compose.foundation.layout.*
+//import androidx.compose.foundation.text.KeyboardOptions
+//import androidx.compose.material3.*
+//import androidx.compose.runtime.*
+//import androidx.compose.ui.Modifier
+//import androidx.compose.ui.graphics.Color
+//import androidx.compose.ui.platform.LocalContext
+//import androidx.compose.ui.text.input.KeyboardType
+//import androidx.compose.ui.unit.dp
+//import com.example.sportsequipmentstore.model.AddressModel
+//import com.example.sportsequipmentstore.repository.AddressRepositoryImpl
+//import com.example.sportsequipmentstore.viewmodel.AddressViewModel
+//import java.util.*
+//
+//class AddressActivity : ComponentActivity() {
+//
+//    private val greenColor = Color(0xFF4CAF50)  // Same green as UserDashboard
+//
+//    override fun onCreate(savedInstanceState: Bundle?) {
+//        super.onCreate(savedInstanceState)
+//        setContent {
+//            Surface(
+//                modifier = Modifier
+//                    .fillMaxSize()
+//                    .background(greenColor)
+//            ) {
+//                AddressScreen(userId = "demo_user_id") // Replace with real userId
+//            }
+//        }
+//    }
+//}
+//
+//@Composable
+//fun AddressScreen(userId: String) {
+//    val greenColor = Color(0xFF4CAF50)  // Same green as UserDashboard
+//    val viewModel = remember { AddressViewModel(AddressRepositoryImpl()) }
+//    val context = LocalContext.current
+//
+//    var addressLine by remember { mutableStateOf("") }
+//    var city by remember { mutableStateOf("") }
+//    var state by remember { mutableStateOf("") }
+//    var postalCode by remember { mutableStateOf("") }
+//    var selectedId by remember { mutableStateOf<String?>(null) }
+//    var addresses by remember { mutableStateOf(emptyList<AddressModel>()) }
+//
+//    fun loadAddresses() {
+//        viewModel.getAddresses(userId) {
+//            addresses = it
+//        }
+//    }
+//
+//    LaunchedEffect(Unit) {
+//        loadAddresses()
+//    }
+//
+//    Column(
+//        modifier = Modifier
+//            .padding(16.dp)
+//            .fillMaxSize()
+//            .background(greenColor)
+//    ) {
+//
+//        Text(
+//            text = if (selectedId == null) "Add Address" else "Update Address",
+//            style = MaterialTheme.typography.titleLarge,
+//            color = Color.White
+//        )
+//
+//        Spacer(modifier = Modifier.height(8.dp))
+//
+//        OutlinedTextField(
+//            value = addressLine,
+//            onValueChange = { addressLine = it },
+//            label = { Text("Address Line") },
+//            modifier = Modifier.fillMaxWidth()
+//        )
+//
+//        Spacer(modifier = Modifier.height(8.dp))
+//
+//        OutlinedTextField(
+//            value = city,
+//            onValueChange = { city = it },
+//            label = { Text("City") },
+//            modifier = Modifier.fillMaxWidth()
+//        )
+//
+//        Spacer(modifier = Modifier.height(8.dp))
+//
+//        OutlinedTextField(
+//            value = state,
+//            onValueChange = { state = it },
+//            label = { Text("District") },
+//            modifier = Modifier.fillMaxWidth()
+//        )
+//
+//        Spacer(modifier = Modifier.height(8.dp))
+//
+//        OutlinedTextField(
+//            value = postalCode,
+//            onValueChange = { postalCode = it },
+//            label = { Text("Postal Code") },
+//            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+//            modifier = Modifier.fillMaxWidth()
+//        )
+//
+//        Spacer(modifier = Modifier.height(16.dp))
+//
+//        Button(
+//            onClick = {
+//                val id = selectedId ?: UUID.randomUUID().toString()
+//                val address = AddressModel(
+//                    id = id,
+//                    userId = userId,
+//                    street = addressLine,
+//                    city = city,
+//                    district = state,
+//                    postalCode = postalCode
+//                )
+//
+//                val action = if (selectedId == null) viewModel::addAddress else viewModel::updateAddress
+//
+//                action(address) { success, message ->
+//                    Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+//                    if (success) {
+//                        addressLine = ""
+//                        city = ""
+//                        state = ""
+//                        postalCode = ""
+//                        selectedId = null
+//                        loadAddresses()
+//                    }
+//                }
+//            },
+//            modifier = Modifier.fillMaxWidth()
+//        ) {
+//            Text(if (selectedId == null) "Save Address" else "Update Address")
+//        }
+//
+//        Spacer(modifier = Modifier.height(24.dp))
+//
+//        Text("Saved Addresses", style = MaterialTheme.typography.titleMedium, color = Color.White)
+//        Spacer(modifier = Modifier.height(8.dp))
+//
+//        addresses.forEach { address ->
+//            Card(
+//                modifier = Modifier
+//                    .fillMaxWidth()
+//                    .padding(vertical = 4.dp)
+//            ) {
+//                Column(modifier = Modifier.padding(12.dp)) {
+//                    Text("Address: ${address.street}")
+//                    Text("City: ${address.city}")
+//                    Text("District: ${address.district}")
+//                    Text("Postal Code: ${address.postalCode}")
+//
+//                    Row(
+//                        horizontalArrangement = Arrangement.spacedBy(16.dp),
+//                        modifier = Modifier.padding(top = 8.dp)
+//                    ) {
+//                        Text(
+//                            "Edit",
+//                            color = MaterialTheme.colorScheme.primary,
+//                            modifier = Modifier.clickable {
+//                                selectedId = address.id
+//                                addressLine = address.street
+//                                city = address.city
+//                                state = address.district
+//                                postalCode = address.postalCode
+//                            }
+//                        )
+//                        Text(
+//                            "Delete",
+//                            color = MaterialTheme.colorScheme.error,
+//                            modifier = Modifier.clickable {
+//                                viewModel.deleteAddress(address.id) { success, message ->
+//                                    Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+//                                    if (success) loadAddresses()
+//                                }
+//                            }
+//                        )
+//                    }
+//                }
+//            }
+//        }
+//    }
+//}
+
+
+
+//package com.example.sportsequipmentstore.view
+//
+//import android.os.Bundle
+//import android.widget.Toast
+//import androidx.activity.ComponentActivity
+//import androidx.activity.compose.setContent
+//import androidx.compose.foundation.background
+//import androidx.compose.foundation.clickable
+//import androidx.compose.foundation.layout.*
+//import androidx.compose.foundation.text.KeyboardOptions
+//import androidx.compose.material3.*
+//import androidx.compose.runtime.*
+//import androidx.compose.ui.Modifier
+//import androidx.compose.ui.graphics.Color
+//import androidx.compose.ui.platform.LocalContext
+//import androidx.compose.ui.text.input.KeyboardType
+//import androidx.compose.ui.unit.dp
+//import com.example.sportsequipmentstore.model.AddressModel
+//import com.example.sportsequipmentstore.repository.AddressRepositoryImpl
+//import com.example.sportsequipmentstore.viewmodel.AddressViewModel
+//import java.util.*
+//
+//class AddressActivity : ComponentActivity() {
+//
+//    private val mutedRose = Color(0xFFF28B82) // Muted Rose
+//
+//    override fun onCreate(savedInstanceState: Bundle?) {
+//        super.onCreate(savedInstanceState)
+//        setContent {
+//            Surface(
+//                modifier = Modifier
+//                    .fillMaxSize()
+//                    .background(mutedRose)
+//            ) {
+//                AddressScreen(userId = "demo_user_id") // Replace with real userId
+//            }
+//        }
+//    }
+//}
+//
+//@Composable
+//fun AddressScreen(userId: String) {
+//    val primaryColor = Color(0xFFF28B82)
+//    val backgroundColor = Color(0xFFFDFDFD)
+//    val cardColor = Color(0xFFF5F5F5)
+//    val textColor = Color(0xFF374151)
+//    val errorColor = Color(0xFFE53935)
+//
+//    val viewModel = remember { AddressViewModel(AddressRepositoryImpl()) }
+//    val context = LocalContext.current
+//
+//    var addressLine by remember { mutableStateOf("") }
+//    var city by remember { mutableStateOf("") }
+//    var state by remember { mutableStateOf("") }
+//    var postalCode by remember { mutableStateOf("") }
+//    var selectedId by remember { mutableStateOf<String?>(null) }
+//    var addresses by remember { mutableStateOf(emptyList<AddressModel>()) }
+//
+//    fun loadAddresses() {
+//        viewModel.getAddresses(userId) {
+//            addresses = it
+//        }
+//    }
+//
+//    LaunchedEffect(Unit) {
+//        loadAddresses()
+//    }
+//
+//    Column(
+//        modifier = Modifier
+//            .padding(16.dp)
+//            .fillMaxSize()
+//            .background(primaryColor)
+//    ) {
+//        Text(
+//            text = if (selectedId == null) "Add Address" else "Update Address",
+//            style = MaterialTheme.typography.titleLarge,
+//            color = Color.White
+//        )
+//
+//        Spacer(modifier = Modifier.height(8.dp))
+//
+//        OutlinedTextField(
+//            value = addressLine,
+//            onValueChange = { addressLine = it },
+//            label = { Text("Address Line", color = textColor) },
+//            modifier = Modifier.fillMaxWidth(),
+//            textStyle = LocalTextStyle.current.copy(color = textColor)
+//        )
+//
+//        Spacer(modifier = Modifier.height(8.dp))
+//
+//        OutlinedTextField(
+//            value = city,
+//            onValueChange = { city = it },
+//            label = { Text("City", color = textColor) },
+//            modifier = Modifier.fillMaxWidth(),
+//            textStyle = LocalTextStyle.current.copy(color = textColor)
+//        )
+//
+//        Spacer(modifier = Modifier.height(8.dp))
+//
+//        OutlinedTextField(
+//            value = state,
+//            onValueChange = { state = it },
+//            label = { Text("District", color = textColor) },
+//            modifier = Modifier.fillMaxWidth(),
+//            textStyle = LocalTextStyle.current.copy(color = textColor)
+//        )
+//
+//        Spacer(modifier = Modifier.height(8.dp))
+//
+//        OutlinedTextField(
+//            value = postalCode,
+//            onValueChange = { postalCode = it },
+//            label = { Text("Postal Code", color = textColor) },
+//            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+//            modifier = Modifier.fillMaxWidth(),
+//            textStyle = LocalTextStyle.current.copy(color = textColor)
+//        )
+//
+//        Spacer(modifier = Modifier.height(16.dp))
+//
+//        Button(
+//            onClick = {
+//                val id = selectedId ?: UUID.randomUUID().toString()
+//                val address = AddressModel(
+//                    id = id,
+//                    userId = userId,
+//                    street = addressLine,
+//                    city = city,
+//                    district = state,
+//                    postalCode = postalCode
+//                )
+//
+//                val action = if (selectedId == null) viewModel::addAddress else viewModel::updateAddress
+//
+//                action(address) { success, message ->
+//                    Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+//                    if (success) {
+//                        addressLine = ""
+//                        city = ""
+//                        state = ""
+//                        postalCode = ""
+//                        selectedId = null
+//                        loadAddresses()
+//                    }
+//                }
+//            },
+//            modifier = Modifier.fillMaxWidth(),
+//            colors = ButtonDefaults.buttonColors(containerColor = Color.White)
+//        ) {
+//            Text(
+//                if (selectedId == null) "Save Address" else "Update Address",
+//                color = primaryColor
+//            )
+//        }
+//
+//        Spacer(modifier = Modifier.height(24.dp))
+//
+//        Text("Saved Addresses", style = MaterialTheme.typography.titleMedium, color = Color.White)
+//        Spacer(modifier = Modifier.height(8.dp))
+//
+//        addresses.forEach { address ->
+//            Card(
+//                modifier = Modifier
+//                    .fillMaxWidth()
+//                    .padding(vertical = 4.dp),
+//                colors = CardDefaults.cardColors(containerColor = cardColor)
+//            ) {
+//                Column(modifier = Modifier.padding(12.dp)) {
+//                    Text("Address: ${address.street}", color = textColor)
+//                    Text("City: ${address.city}", color = textColor)
+//                    Text("District: ${address.district}", color = textColor)
+//                    Text("Postal Code: ${address.postalCode}", color = textColor)
+//
+//                    Row(
+//                        horizontalArrangement = Arrangement.spacedBy(16.dp),
+//                        modifier = Modifier.padding(top = 8.dp)
+//                    ) {
+//                        Text(
+//                            "Edit",
+//                            color = primaryColor,
+//                            modifier = Modifier.clickable {
+//                                selectedId = address.id
+//                                addressLine = address.street
+//                                city = address.city
+//                                state = address.district
+//                                postalCode = address.postalCode
+//                            }
+//                        )
+//                        Text(
+//                            "Delete",
+//                            color = errorColor,
+//                            modifier = Modifier.clickable {
+//                                viewModel.deleteAddress(address.id) { success, message ->
+//                                    Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+//                                    if (success) loadAddresses()
+//                                }
+//                            }
+//                        )
+//                    }
+//                }
+//            }
+//        }
+//    }
+//}
+
+
+
 package com.example.sportsequipmentstore.view
 
 import android.os.Bundle
@@ -16,6 +423,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.example.sportsequipmentstore.model.AddressModel
 import com.example.sportsequipmentstore.repository.AddressRepositoryImpl
@@ -24,15 +432,13 @@ import java.util.*
 
 class AddressActivity : ComponentActivity() {
 
-    private val greenColor = Color(0xFF4CAF50)  // Same green as UserDashboard
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
+            // Use the muted rose background color for the entire surface
             Surface(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(greenColor)
+                modifier = Modifier.fillMaxSize(),
+                color = Color(0xFFFCECEC) // light muted rose background
             ) {
                 AddressScreen(userId = "demo_user_id") // Replace with real userId
             }
@@ -40,9 +446,14 @@ class AddressActivity : ComponentActivity() {
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddressScreen(userId: String) {
-    val greenColor = Color(0xFF4CAF50)  // Same green as UserDashboard
+    val primaryColor = Color(0xFFE57373) // muted rose
+    val cardBackground = Color(0xFFF8D7DA) // soft pink for cards
+    val textColor = primaryColor.copy(alpha = 0.9f)
+    val errorColor = Color(0xFFB00020) // strong red for errors
+
     val viewModel = remember { AddressViewModel(AddressRepositoryImpl()) }
     val context = LocalContext.current
 
@@ -59,60 +470,58 @@ fun AddressScreen(userId: String) {
         }
     }
 
-    LaunchedEffect(Unit) {
-        loadAddresses()
-    }
+    LaunchedEffect(Unit) { loadAddresses() }
 
     Column(
         modifier = Modifier
             .padding(16.dp)
             .fillMaxSize()
-            .background(greenColor)
     ) {
-
         Text(
             text = if (selectedId == null) "Add Address" else "Update Address",
             style = MaterialTheme.typography.titleLarge,
-            color = Color.White
+            color = primaryColor,
+            modifier = Modifier.fillMaxWidth(),
+            textAlign = TextAlign.Center
         )
 
-        Spacer(modifier = Modifier.height(8.dp))
+        Spacer(modifier = Modifier.height(16.dp))
 
         OutlinedTextField(
             value = addressLine,
             onValueChange = { addressLine = it },
-            label = { Text("Address Line") },
-            modifier = Modifier.fillMaxWidth()
+            label = { Text("Address Line", color = textColor) },
+            modifier = Modifier.fillMaxWidth(),
+            textStyle = LocalTextStyle.current.copy(color = textColor)
         )
-
         Spacer(modifier = Modifier.height(8.dp))
 
         OutlinedTextField(
             value = city,
             onValueChange = { city = it },
-            label = { Text("City") },
-            modifier = Modifier.fillMaxWidth()
+            label = { Text("City", color = textColor) },
+            modifier = Modifier.fillMaxWidth(),
+            textStyle = LocalTextStyle.current.copy(color = textColor)
         )
-
         Spacer(modifier = Modifier.height(8.dp))
 
         OutlinedTextField(
             value = state,
             onValueChange = { state = it },
-            label = { Text("District") },
-            modifier = Modifier.fillMaxWidth()
+            label = { Text("District", color = textColor) },
+            modifier = Modifier.fillMaxWidth(),
+            textStyle = LocalTextStyle.current.copy(color = textColor)
         )
-
         Spacer(modifier = Modifier.height(8.dp))
 
         OutlinedTextField(
             value = postalCode,
             onValueChange = { postalCode = it },
-            label = { Text("Postal Code") },
+            label = { Text("Postal Code", color = textColor) },
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth(),
+            textStyle = LocalTextStyle.current.copy(color = textColor)
         )
-
         Spacer(modifier = Modifier.height(16.dp))
 
         Button(
@@ -141,27 +550,37 @@ fun AddressScreen(userId: String) {
                     }
                 }
             },
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth(),
+            colors = ButtonDefaults.buttonColors(containerColor = primaryColor, contentColor = Color.White)
         ) {
-            Text(if (selectedId == null) "Save Address" else "Update Address")
+            Text(
+                if (selectedId == null) "Save Address" else "Update Address"
+            )
         }
 
         Spacer(modifier = Modifier.height(24.dp))
 
-        Text("Saved Addresses", style = MaterialTheme.typography.titleMedium, color = Color.White)
+        Text(
+            "Saved Addresses",
+            style = MaterialTheme.typography.titleMedium,
+            color = primaryColor,
+            modifier = Modifier.fillMaxWidth(),
+            textAlign = TextAlign.Center
+        )
         Spacer(modifier = Modifier.height(8.dp))
 
         addresses.forEach { address ->
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(vertical = 4.dp)
+                    .padding(vertical = 4.dp),
+                colors = CardDefaults.cardColors(containerColor = cardBackground)
             ) {
                 Column(modifier = Modifier.padding(12.dp)) {
-                    Text("Address: ${address.street}")
-                    Text("City: ${address.city}")
-                    Text("District: ${address.district}")
-                    Text("Postal Code: ${address.postalCode}")
+                    Text("Address: ${address.street}", color = textColor)
+                    Text("City: ${address.city}", color = textColor)
+                    Text("District: ${address.district}", color = textColor)
+                    Text("Postal Code: ${address.postalCode}", color = textColor)
 
                     Row(
                         horizontalArrangement = Arrangement.spacedBy(16.dp),
@@ -169,7 +588,7 @@ fun AddressScreen(userId: String) {
                     ) {
                         Text(
                             "Edit",
-                            color = MaterialTheme.colorScheme.primary,
+                            color = primaryColor,
                             modifier = Modifier.clickable {
                                 selectedId = address.id
                                 addressLine = address.street
@@ -180,7 +599,7 @@ fun AddressScreen(userId: String) {
                         )
                         Text(
                             "Delete",
-                            color = MaterialTheme.colorScheme.error,
+                            color = errorColor,
                             modifier = Modifier.clickable {
                                 viewModel.deleteAddress(address.id) { success, message ->
                                     Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
